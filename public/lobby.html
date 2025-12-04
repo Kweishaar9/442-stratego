@@ -4,10 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
-    <title>Stratego Lobby</title>
+    <title>STRATEGO</title>
 
 </head>
 <body>
-    <h1>if you're seeing this, it works!!!!!!</h1>
+    <header>
+        <h1>STRATEGO LOBBY</h1>
+        <div id="userInfo">
+            <p>Logged in as: <span id="usernameDisplay"></span></p>
+        </div>
+        <form id="logOut">
+            <button type="submit">Logout</button>
+        </form>
+    </header>
+
+    <main>
+        <section id="usersSection">
+            <h2>Players in Lobby</h2>
+            <p id="usersStatus">Loading users...</p>
+            <ul id="usersList"></ul>
+        </section>
+
+        <section id="messagesSection">
+            <h2>Messages</h2>
+            <p id="messageLog">No messages yet.</p>
+        </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/lobby.js"></script>
 </body>
 </html>

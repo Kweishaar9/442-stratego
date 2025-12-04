@@ -14,3 +14,8 @@ h1{
     font-size: 1.25rem;
     opacity: 0.85;
 }
+
+#loginError{
+    color: #da2c2c;
+    font-weight: bold;
+}

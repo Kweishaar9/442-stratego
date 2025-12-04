@@ -42,8 +42,10 @@ async function userInActiveOrPendingGame(userId) {
 // Challenge another user to a game body: { opponentId }
 router.post("/challenge", requireAuth, async (req, res) => {
 
-    const { opponentId } = req.body;
-    if (!opponentId || Number.isNaN(opponentId)) {
+    let { opponentId } = req.body;
+    opponentId = Number(opponentId);
+
+    if (!Number.isInteger(opponentId)) {
         return res.status(400).json({ error: "Invalid opponent ID" });
     }
 
@@ -51,6 +53,10 @@ router.post("/challenge", requireAuth, async (req, res) => {
 
     if (challengerId === opponentId) {
         return res.status(400).json({ error: "Cannot challenge yourself" });
+    }
+
+    if (opponentId <= 0) {
+        return res.status(400).json({ error: "Invalid opponent ID" });
     }
 
     try {

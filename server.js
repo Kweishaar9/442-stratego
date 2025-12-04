@@ -37,17 +37,6 @@ app.use("/api", authRoutes);
 const lobbyRoutes = require("./src/routes/lobby");
 app.use("/api/lobby", lobbyRoutes);
 
-app.get("/api/me", (req, res) => {
-    if (!req.session.userId){
-        return res.status(401).json({ authenticated: false });
-    }
-
-    res.json({
-        authenticated: true,
-        userId: req.session.userId,
-        username: req.session.username
-    })
-});
 // Test API route
 app.get("/api/health", (req, res) => {
     res.json({ status: "OK", time: new Date().toISOString() });

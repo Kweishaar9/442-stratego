@@ -4,6 +4,19 @@ const pool = require("../db");
 
 const router = express.Router();
 
+// GET /me
+router.get("/me", (req, res) => {
+    if (!req.session.userId){
+        return res.status(401).json({ error: "Not logged in"});
+    }
+
+    res.json({
+        authenticated: true,
+        userId: req.session.userId,
+        username: req.session.username 
+    });
+});
+
 // GET /api/register/token
 
 router.get("/register/token", (req, res) => {
@@ -66,7 +79,7 @@ router.post("/login", async (req, res) => {
     }
 
     const [rows] = await pool.query(
-        "SELECT id, password_hash FROM users WHERE username = ?",
+        "SELECT id, username,password_hash FROM users WHERE username = ?",
         [username]
     );
 
@@ -91,6 +104,9 @@ router.post("/login", async (req, res) => {
 // POST /api/logout
 
 router.post("/logout", (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
     req.session.destroy(() => res.status(204).end());
 });
 

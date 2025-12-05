@@ -1,5 +1,6 @@
 const express = require("express");
 const pool = require("../db");
+
 const e = require("express");
 const router = express.Router();
 
@@ -130,5 +131,65 @@ router.post("/respond", requireAuth, async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+
+// Lobby messages
+
+// GET /api/lobby/messages
+router.get("/messages", requireAuth, async (req, res) => {
+    try{
+        const [rows] = await pool.query(
+            `SELECT lm.id, lm.user_id, u.username, lm.content, lm.created_at
+             FROM lobby_messages lm
+             JOIN users u ON lm.user_id = u.id
+             ORDER BY lm.created_at DESC
+             LIMIT 50`
+        );
+        res.json(rows.reverse()); // Return messages in chronological order
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// POST /api/lobby/messages
+// Body: { content: "message text" }
+router.post("/messages", requireAuth, async (req, res) => {
+    const { content } = req.body;
+    
+    if(!content || !content.trim()){
+        return res.status(400).json({ error: "Message content cannot be empty" });
+    }
+
+    const userId = req.session.userId;
+
+    try {
+        const [result] = await pool.query(
+            "INSERT INTO lobby_messages (user_id, content) VALUES (?, ?)",
+            [userId, content.trim()]
+        );
+
+        const messageId = result.insertId;
+
+        const [rows] = await pool.query(
+            `SELECT lm.id, lm.user_id, u.username, lm.content, lm.created_at
+             FROM lobby_messages lm
+             JOIN users u ON lm.user_id = u.id
+             WHERE lm.id = ?`,
+            [messageId]
+        );
+
+        const message = rows[0];
+
+        req.app.get("io").emit("lobbyMessage", message);
+
+        res.status(201).json(message);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 
 module.exports = router;

@@ -3,6 +3,9 @@ const usersStatus = document.getElementById("usersStatus");
 const usersList = document.getElementById("usersList");
 const messageLog = document.getElementById("messageLog");
 const logout = document.getElementById("logOut");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
 
 function setMessage(msg) {
     messageLog.textContent = msg;
@@ -22,6 +25,7 @@ async function checkAuth() {
         usernameDisplay.textContent = `Logged in as: ${data.username}`;
 
         loadLobbyUsers();
+        loadChatMessages();
     } catch (error) {
         console.error('Error checking login status:', error);
         setMessage('Error verifying session');
@@ -113,5 +117,72 @@ logout.addEventListener("submit", async (e) => {
         console.error('Error logging out:', error);
         setMessage('Error logging out');
     }
+});
+
+//Render Messages to chat window
+function appendChatMessage(msg) {
+    const li = document.createElement('li');
+
+    const time = new Date(msg.created_at);
+    const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    li.textContent = `[${timeString}] ${msg.username}: ${msg.content}`;
+    chatMessages.appendChild(li);
+    // Scrolls to the bottom as chat grows
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Load existing chat messages
+async function loadChatMessages() {
+    try {
+        const res = await fetch('/api/lobby/messages');
+
+        if (!res.ok) {
+            console.error('Error loading chat messages');
+            return;
+        }
+
+        const messages = await res.json();
+        chatMessages.innerHTML = '';
+        messages.forEach(appendChatMessage);
+    }catch (error) {
+        console.error('Error loading chat messages:', error);
+    }
+}
+
+// Handle new chat message submission
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const message = chatInput.value.trim();
+    if (!message) return;
+    console.log("Sending chat message:", message);
+    try {
+        const res = await fetch('/api/lobby/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: message })
+        });
+
+        if (!res.ok) {
+            console.error('Error sending chat message');
+            return;
+        }
+        console.log("Chat message sent successfully");
+        chatInput.value = '';
+    } catch (error) {
+        console.error('Error sending chat message:', error);
+    }
+});
+
+const socket = io();
+
+socket.on("connect", () => {
+    console.log("Connected to server with ID:", socket.id);
+});
+
+socket.on("lobbyMessage", (message) => {
+    console.log("New lobby message received:", message);
+    appendChatMessage(message);
 });
 checkAuth();

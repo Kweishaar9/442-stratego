@@ -29,6 +29,16 @@
             <h2>Messages</h2>
             <p id="messageLog">No messages yet.</p>
         </section>
+
+        <section id="chatSection">
+            <h2>Lobby Chat</h2>
+            <ul id="chatMessages"></ul>
+
+            <form id="chatForm">
+                <input type="text" id="chatInput" placeholder="Type a message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </section>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
